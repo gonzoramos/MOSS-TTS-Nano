@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 import re
 import threading
 from dataclasses import dataclass
@@ -8,6 +9,7 @@ from dataclasses import dataclass
 from tts_robust_normalizer_single_script import normalize_tts_text
 
 ENGLISH_VOICES = frozenset({"Trump", "Ava", "Bella", "Adam", "Nathan"})
+CUSTOM_ZH_WETEXT_CACHE_DIR = Path(__file__).resolve().parent / ".cache" / "wetext_zh_no_erhua_keep_punct"
 
 
 @dataclass(frozen=True)
@@ -99,7 +101,13 @@ class WeTextProcessingManager:
 
             logging.getLogger().setLevel(logging.INFO)
             self._normalizers = {
-                "zh": ZhNormalizer(overwrite_cache=False),
+                "zh": ZhNormalizer(
+                    cache_dir=str(CUSTOM_ZH_WETEXT_CACHE_DIR),
+                    overwrite_cache=False,
+                    remove_interjections=False,
+                    remove_erhua=False,
+                    full_to_half=False,
+                ),
                 "en": EnNormalizer(overwrite_cache=False),
             }
             return self._normalizers
