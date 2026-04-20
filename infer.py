@@ -297,7 +297,25 @@ def maybe_print_voice_clone_text_chunks(
         print()
 
 
-def main(argv: Optional[Sequence[str]] = None) -> dict[str, object]:
+def main(
+    argv: Optional[Sequence[str]] = None,
+    *,
+    audio_tokenizer=None,
+) -> dict[str, object]:
+    """Run inference.
+
+    Parameters
+    ----------
+    argv:
+        Command-line arguments (defaults to sys.argv).
+    audio_tokenizer:
+        Optional pre-loaded audio tokenizer object.  When supplied it is
+        passed directly to ``model.inference()`` so the model skips its
+        internal tokenizer load step.  If the tokenizer's ``batch_encode``
+        method has been monkey-patched (e.g. to return pre-encoded RVQ
+        codes) the encoding step is also skipped, saving significant time
+        on repeated calls with the same reference voice.
+    """
     set_logging()
     args = parse_args(argv)
     if args.debug == 1:
@@ -349,6 +367,7 @@ def main(argv: Optional[Sequence[str]] = None) -> dict[str, object]:
         prompt_audio_path=args.prompt_audio_path,
         reference_audio_path=args.reference_audio_path,
         text_tokenizer_path=args.text_tokenizer_path,
+        audio_tokenizer=audio_tokenizer,  # None → model loads its own
         audio_tokenizer_type=MOSS_AUDIO_TOKENIZER_TYPE,
         audio_tokenizer_pretrained_name_or_path=args.audio_tokenizer_pretrained_name_or_path,
         device=device,

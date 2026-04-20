@@ -56,6 +56,7 @@ MOSS-TTS-Nano is an open-source **multilingual tiny speech generation model** fr
   - [ONNX CPU Inference](#onnx-cpu-version)
   - [CLI Command: `moss-tts-nano generate`](#cli-command-moss-tts-nano-generate)
   - [CLI Command: `moss-tts-nano serve`](#cli-command-moss-tts-nano-serve)
+  - [CLI Command: `moss-tts-nano set-voice`](#cli-command-moss-tts-nano-set-voice)
   - [Finetuning](#finetuning)
 - [MOSS-Audio-Tokenizer-Nano](#moss-audio-tokenizer-nano)
 - [MOSS-TTS Family](#moss-tts)
@@ -253,6 +254,37 @@ moss-tts-nano serve \
 ```
 
 This command forwards to `app.py`, keeps the model loaded in memory, and serves the local browser demo plus HTTP generation endpoints.
+
+### CLI Command: `moss-tts-nano set-voice`
+
+`set-voice` lets you pre-clone a reference voice once and reuse it on every `generate` call without passing `--prompt-speech` each time.
+
+**How it works:** on first run, `set-voice` loads only the lightweight audio tokenizer (~20M params), encodes the reference audio into RVQ codes, and caches them to `~/.config/moss-tts-nano/cache/`. Subsequent `generate` calls inject the cached codes directly, skipping the encoding step entirely.
+
+```bash
+# Set a default voice from a local file
+moss-tts-nano set-voice --prompt-speech assets/audio/en_kayla.wav
+
+# Set a default voice from a built-in preset
+moss-tts-nano set-voice --voice Junhao
+
+# Generate without specifying --prompt-speech (uses the default voice)
+moss-tts-nano generate --text "Hello, this is a test."
+
+# Using Poetry
+poetry run moss-tts-nano generate --text "Hello, this is a test."
+
+# Inspect the current default voice
+moss-tts-nano set-voice --show
+
+# Remove the default voice
+moss-tts-nano set-voice --clear
+
+# Save the path only, skip pre-encoding (encoding runs at inference time as usual)
+moss-tts-nano set-voice --prompt-speech my_voice.wav --no-cache
+```
+
+Config is stored in `~/.config/moss-tts-nano/config.json`. The directory can be overridden with the `MOSS_TTS_NANO_CONFIG_DIR` environment variable.
 
 ### Finetuning
 
